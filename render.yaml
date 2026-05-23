@@ -10,10 +10,3 @@ services:
         generateValue: true
       - key: DATABASE_URL
         value: sqlite:////workspace/instance/database.db
-    # Note: Persistent disks on Render require a paid instance type (e.g. Starter tier). 
-    # If deploying on the free tier, remove the disk block below; database changes will reset 
-    # when the container restarts or goes to sleep.
-    disk:
-      name: obsidian-storage
-      mountPath: /workspace/instance
-      sizeGB: 1
