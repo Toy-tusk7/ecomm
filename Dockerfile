@@ -26,8 +26,5 @@ COPY . .
 # Ensure directory for SQLite database and uploads exist
 RUN mkdir -p instance app/static/uploads
 
-# Expose server port
-EXPOSE 5000
-
-# Start WSGI Server (Gunicorn) binding to port 5000
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:create_app()"]
+# Start WSGI Server (Gunicorn) binding to the dynamic PORT environment variable (default 10000 for Render)
+CMD gunicorn -w 4 -b 0.0.0.0:${PORT:-10000} "app:create_app()"

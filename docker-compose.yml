@@ -11,6 +11,7 @@ services:
       - FLASK_ENV=production
       - SECRET_KEY=obsidian-store-super-secret-key-1298471209
       - DATABASE_URL=sqlite:///database.db
+      - PORT=5000
     volumes:
       - db_data:/workspace/instance
       - uploads_data:/workspace/app/static/uploads
