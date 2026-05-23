@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Obsidian Store - Premium Electronics{% endblock %}
+
+{% block content %}
+<!-- Hero Header -->
+<section class="hero">
+    <h1 class="hero-title">Elevate Your <span class="brand-accent">Workspace Setup</span></h1>
+    <p class="hero-subtitle">Premium modular hardware, acoustic peripherals, and glowing glassmorphic elements designed for high performance.</p>
+</section>
+
+<!-- Search and Category Filters -->
+<div class="store-controls">
+    <div class="categories-list">
+        <a href="{{ url_for('main.index', q=query) }}" class="category-pill {% if not selected_category %}active{% endif %}">
+            All Products
+        </a>
+        {% for cat in categories %}
+            <a href="{{ url_for('main.index', category=cat.slug, q=query) }}" 
+               class="category-pill {% if selected_category and selected_category.slug == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+        {% endfor %}
+    </div>
+    
+    <div class="search-box">
+        <form action="{{ url_for('main.index') }}" method="GET">
+            {% if selected_category %}
+                <input type="hidden" name="category" value="{{ selected_category.slug }}">
+            {% endif %}
+            <span class="search-icon">🔍</span>
+            <input type="text" name="q" value="{{ query or '' }}" placeholder="Search hardware..." class="search-input">
+        </form>
+    </div>
+</div>
+
+<!-- Products Display -->
+{% if products %}
+    <div class="products-grid">
+        {% for prod in products %}
+            <article class="product-card" data-product-id="{{ prod.id }}">
+                <span class="product-category-tag">{{ prod.category.name }}</span>
+                <a href="{{ url_for('main.product_detail', product_id=prod.id) }}" class="product-image-container">
+                    <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-image" loading="lazy">
+                </a>
+                
+                <div class="product-info">
+                    <a href="{{ url_for('main.product_detail', product_id=prod.id) }}">
+                        <h3 class="product-title">{{ prod.name }}</h3>
+                    </a>
+                    <p class="product-desc">{{ prod.description }}</p>
+                    
+                    <div class="product-footer">
+                        <span class="product-price">${{ "%.2f"|format(prod.price) }}</span>
+                        
+                        {% if prod.stock > 0 %}
+                            <form action="{{ url_for('main.cart_add', product_id=prod.id) }}" method="POST" class="add-to-cart-form">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary" style="padding: 10px 18px; font-size: 13px;">
+                                    Add +
+                                </button>
+                            </form>
+                        {% else %}
+                            <span class="stock-status stock-out">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📂</div>
+        <h2>No Products Found</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">We couldn't find any products matching your current filters.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Clear Filters</a>
+    </div>
+{% endif %}
+{% endblock %}

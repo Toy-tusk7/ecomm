@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Cart - Obsidian Store{% endblock %}
+
+{% block content %}
+<h1 style="font-size: 32px; font-weight: 800; margin-bottom: 24px;">Shopping Cart</h1>
+
+{% if cart_items %}
+    <div class="cart-grid">
+        <!-- Cart Line Items -->
+        <div class="cart-items-container">
+            {% for item in cart_items %}
+                <div class="cart-item">
+                    <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-image">
+                    
+                    <div class="cart-item-info">
+                        <h3 class="cart-item-name">{{ item.product.name }}</h3>
+                        <p class="cart-item-price">${{ "%.2f"|format(item.product.price) }} each</p>
+                    </div>
+                    
+                    <div class="cart-item-qty">
+                        <div class="qty-selector" style="padding: 4px;">
+                            <button type="button" class="qty-btn minus" style="width: 28px; height: 28px; font-size: 14px;">-</button>
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" class="qty-input" data-product-id="{{ item.product.id }}" style="width: 30px;" readonly>
+                            <button type="button" class="qty-btn plus" style="width: 28px; height: 28px; font-size: 14px;">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-item-subtotal">
+                        ${{ "%.2f"|format(item.subtotal) }}
+                    </div>
+                    
+                    <!-- Remove Form -->
+                    <form action="{{ url_for('main.cart_remove', product_id=item.product.id) }}" method="POST" class="cart-item-remove-form">
+                        <button type="submit" class="cart-item-remove" title="Remove Item">
+                            🗑️
+                        </button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Cart Summary -->
+        <div class="summary-card">
+            <h3 class="summary-title">Order Summary</h3>
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span class="cart-total-value">${{ "%.2f"|format(total) }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span style="color: var(--success); font-weight: 600;">FREE</span>
+            </div>
+            <div class="summary-row">
+                <span>Taxes</span>
+                <span>Calculated at checkout</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span class="cart-total-value">${{ "%.2f"|format(total) }}</span>
+            </div>
+            
+            <a href="{{ url_for('main.checkout') }}" class="btn btn-primary" style="width: 100%; margin-top: 24px; padding: 14px 0;">
+                Proceed to Checkout
+            </a>
+        </div>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🛒</div>
+        <h2>Your Cart is Empty</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">Explore our catalog to find premium hardware and desktop products.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">Go to Catalog</a>
+    </div>
+{% endif %}
+{% endblock %}

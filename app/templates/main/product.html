@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Obsidian Store{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('main.index') }}" class="btn btn-secondary" style="margin-bottom: 20px; display: inline-flex;">
+    ← Back to Catalog
+</a>
+
+<div class="product-detail-grid">
+    <!-- Product Gallery -->
+    <div class="detail-gallery">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="detail-img">
+    </div>
+    
+    <!-- Product Specifications -->
+    <div class="detail-content">
+        <span class="detail-category">{{ product.category.name }}</span>
+        <h1 class="detail-title">{{ product.name }}</h1>
+        
+        <div class="detail-price">
+            <span>${{ "%.2f"|format(product.price) }}</span>
+            {% if product.stock > 0 %}
+                <span class="stock-status stock-in">In Stock ({{ product.stock }})</span>
+            {% else %}
+                <span class="stock-status stock-out">Out of Stock</span>
+            {% endif %}
+        </div>
+        
+        <p class="detail-desc">{{ product.description }}</p>
+        
+        {% if product.stock > 0 %}
+            <form action="{{ url_for('main.cart_add', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label class="form-label">Select Quantity</label>
+                    <div class="qty-selector">
+                        <button type="button" class="qty-btn minus">-</button>
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input" readonly>
+                        <button type="button" class="qty-btn plus">+</button>
+                    </div>
+                </div>
+                
+                <div class="purchase-actions">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px 28px;">
+                        Add to Shopping Cart
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <div class="purchase-actions">
+                <button class="btn btn-secondary" style="flex: 1; padding: 14px 28px;" disabled>
+                    Item Out of Stock
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recommended Items -->
+{% if recommended %}
+    <div style="margin-top: 80px;">
+        <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 24px;">Recommended Devices</h2>
+        <div class="products-grid">
+            {% for prod in recommended %}
+                <article class="product-card">
+                    <span class="product-category-tag">{{ prod.category.name }}</span>
+                    <a href="{{ url_for('main.product_detail', product_id=prod.id) }}" class="product-image-container">
+                        <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="product-image" loading="lazy">
+                    </a>
+                    <div class="product-info">
+                        <a href="{{ url_for('main.product_detail', product_id=prod.id) }}">
+                            <h3 class="product-title">{{ prod.name }}</h3>
+                        </a>
+                        <div class="product-footer" style="margin-top: 15px;">
+                            <span class="product-price">${{ "%.2f"|format(prod.price) }}</span>
+                            <a href="{{ url_for('main.product_detail', product_id=prod.id) }}" class="btn btn-secondary" style="padding: 8px 14px; font-size: 12px;">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const detailForm = document.querySelector('.add-to-cart-form');
+    if (!detailForm) return;
+    
+    const qtyInput = detailForm.querySelector('.qty-input');
+    const minusBtn = detailForm.querySelector('.minus');
+    const plusBtn = detailForm.querySelector('.plus');
+    const maxStock = parseInt(qtyInput.getAttribute('max')) || 1;
+    
+    minusBtn.addEventListener('click', () => {
+        let val = parseInt(qtyInput.value) || 1;
+        if (val > 1) {
+            qtyInput.value = val - 1;
+        }
+    });
+    
+    plusBtn.addEventListener('click', () => {
+        let val = parseInt(qtyInput.value) || 1;
+        if (val < maxStock) {
+            qtyInput.value = val + 1;
+        }
+    });
+});
+</script>
+{% endblock %}

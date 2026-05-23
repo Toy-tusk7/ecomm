@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Obsidian Store - Premium Tech Accessories{% endblock %}</title>
+    <!-- CSS stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation Navbar -->
+    <header class="navbar">
+        <div class="container navbar-container">
+            <a href="{{ url_for('main.index') }}" class="brand">
+                <span>🌌</span> OBSIDIAN<span class="brand-accent">STORE</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">Catalog</a></li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin %}
+                            <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if 'admin' in request.path %}active{% endif %}">Admin Hub</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('main.orders') }}" class="nav-link {% if '/orders' in request.path %}active{% endif %}">My Orders</a></li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <div class="nav-actions">
+                <a href="{{ url_for('main.cart') }}" class="btn-icon cart-nav-btn" title="Cart">
+                    <span>🛒</span>
+                    {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                
+                {% if current_user.is_authenticated %}
+                    <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary);">
+                        {{ current_user.username }}
+                    </span>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary" style="padding: 8px 16px;">
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary" style="padding: 8px 16px;">
+                        Login
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="padding: 8px 16px;">
+                        Join
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="main-content container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div>
+                <p>&copy; 2026 Obsidian Store. All rights reserved.</p>
+            </div>
+            <div style="display: flex; gap: 20px;">
+                <a href="#" style="color: var(--text-secondary); hover:color: var(--text-primary)">Privacy</a>
+                <a href="#" style="color: var(--text-secondary); hover:color: var(--text-primary)">Terms</a>
+                <a href="#" style="color: var(--text-secondary); hover:color: var(--text-primary)">Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flask Flash Messages parser for JavaScript Toasts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-data" data-category="{{ category }}" data-message="{{ message }}" style="display: none;"></div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- JavaScript script files -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

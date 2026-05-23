@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Orders - Obsidian Store{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1 style="font-size: 32px; font-weight: 800;">Manage Customer Orders</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+        ← Back to Dashboard
+    </a>
+</div>
+
+{% if orders %}
+    <div class="order-list">
+        {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <div class="order-details-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); flex: 1;">
+                        <div>
+                            <div class="order-meta-label">Customer</div>
+                            <div class="order-meta-val">{{ order.user.username }}</div>
+                        </div>
+                        <div>
+                            <div class="order-meta-label">Order Ref</div>
+                            <div class="order-meta-val">#{{ order.id }}</div>
+                        </div>
+                        <div>
+                            <div class="order-meta-label">Date</div>
+                            <div class="order-meta-val">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                        <div>
+                            <div class="order-meta-label">Total Earnings</div>
+                            <div class="order-meta-val" style="color: var(--success); font-weight: 700;">
+                                ${{ "%.2f"|format(order.total_price) }}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="order-meta-label">Current Status</div>
+                            <div>
+                                <span class="order-status-badge status-{{ order.status.lower() }}">
+                                    {{ order.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Adjustment Form -->
+                    <form action="{{ url_for('admin.order_status', order_id=order.id) }}" method="POST" style="display: flex; gap: 8px; align-items: center;">
+                        <select name="status" class="form-control" style="padding: 6px 12px; font-size: 12px; width: 120px; background: rgba(255,255,255,0.05); cursor: pointer;">
+                            <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Paid" {% if order.status == 'Paid' %}selected{% endif %}>Paid</option>
+                            <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                            <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">
+                            Update
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="order-body">
+                    <div style="margin-bottom: 20px; font-size: 14px;">
+                        <span style="color: var(--text-secondary); font-weight: 600;">Delivery Address: </span>
+                        <span style="color: var(--text-primary);">{{ order.shipping_address }}</span>
+                        <span style="color: var(--text-secondary); font-weight: 600; margin-left: 20px;">Payment Method: </span>
+                        <span style="color: var(--text-primary);">{{ order.payment_method }}</span>
+                    </div>
+                    
+                    <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;">Order Details</h4>
+                    <div class="order-items-list">
+                        {% for item in order.items %}
+                            <div class="order-item-row">
+                                <div class="order-item-desc">
+                                    <span style="font-weight: 600;">{{ item.product.name }}</span>
+                                    <span style="color: var(--text-secondary);">x{{ item.quantity }}</span>
+                                </div>
+                                <span style="font-weight: 700;">${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <h2>No Orders Placed</h2>
+        <p style="color: var(--text-secondary);">Customers haven't purchased anything from the store yet.</p>
+    </div>
+{% endif %}
+{% endblock %}

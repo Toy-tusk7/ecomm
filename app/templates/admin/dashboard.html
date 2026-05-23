@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Obsidian Store{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1 style="font-size: 32px; font-weight: 800;">Admin Hub</h1>
+    <div style="display: flex; gap: 12px;">
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-secondary">
+            📋 Customer Orders
+        </a>
+        <a href="{{ url_for('admin.product_new') }}" class="btn btn-primary">
+            ✚ Add Product
+        </a>
+    </div>
+</div>
+
+<!-- Stats Counter Grid -->
+<div class="admin-stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Revenue</span>
+        <span class="stat-val" style="color: var(--success);">${{ "%.2f"|format(total_sales) }}</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Registered Customers</span>
+        <span class="stat-val">{{ users_count }}</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Unique Products</span>
+        <span class="stat-val">{{ products|length }}</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Active Categories</span>
+        <span class="stat-val">{{ categories|length }}</span>
+    </div>
+</div>
+
+<!-- Products Inventory Management -->
+<h2 style="font-size: 22px; font-weight: 800; margin-top: 40px; margin-bottom: 16px;">Product Inventory</h2>
+<div class="table-responsive">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prod in products %}
+                <tr>
+                    <td>
+                        <img src="{{ prod.image_url }}" alt="{{ prod.name }}" class="admin-table-img">
+                    </td>
+                    <td style="font-weight: 600;">{{ prod.name }}</td>
+                    <td>{{ prod.category.name }}</td>
+                    <td style="font-weight: 700;">${{ "%.2f"|format(prod.price) }}</td>
+                    <td>
+                        {% if prod.stock > 0 %}
+                            <span style="color: var(--success); font-weight: 600;">{{ prod.stock }} units</span>
+                        {% else %}
+                            <span style="color: var(--error); font-weight: 600;">Out of stock</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="{{ url_for('admin.product_edit', product_id=prod.id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                Edit
+                            </a>
+                            <form action="{{ url_for('admin.product_delete', product_id=prod.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        No products inside database inventory. Seed or create them.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

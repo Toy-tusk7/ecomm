@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Obsidian Store{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2 class="form-title">Create Account</h2>
+    <p class="form-subtitle">Register to manage orders and track shipments</p>
+    
+    <form action="{{ url_for('auth.register') }}" method="POST">
+        <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required autocomplete="email">
+        </div>
+        
+        <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+        </div>
+        
+        <div class="form-group">
+            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">
+            Create Account
+        </button>
+    </form>
+    
+    <div class="form-footer">
+        <p>Already have an account? <a href="{{ url_for('auth.login') }}">Sign In</a></p>
+    </div>
+</div>
+{% endblock %}
