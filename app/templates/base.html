@@ -97,9 +97,6 @@
 
     <!-- Mobile Navigation Drawer -->
     <div class="mobile-drawer" id="mobile-drawer">
-        <div class="mobile-drawer-close-row">
-            <button class="drawer-close" id="drawer-close">&times;</button>
-        </div>
         <ul class="mobile-nav-menu">
             <li><a href="{{ url_for('main.elrs_landing') }}" class="mobile-nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
             <li><a href="{{ url_for('main.index') }}" class="mobile-nav-link {% if request.path == '/products' %}active{% endif %}">Products</a></li>

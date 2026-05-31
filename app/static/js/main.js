@@ -315,7 +315,6 @@ function setupCartActions() {
 // Function: Setup mobile navigation drawer interactions
 function setupMobileDrawer() {
     const toggleBtn = document.getElementById('navbar-toggle');
-    const closeBtn = document.getElementById('drawer-close');
     const overlay = document.getElementById('drawer-overlay');
     const drawer = document.getElementById('mobile-drawer');
 
@@ -323,17 +322,24 @@ function setupMobileDrawer() {
 
     const openDrawer = () => {
         drawer.classList.add('open');
+        toggleBtn.classList.add('open');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     };
 
     const closeDrawer = () => {
         drawer.classList.remove('open');
+        toggleBtn.classList.remove('open');
         overlay.classList.remove('active');
         document.body.style.overflow = '';
     };
 
-    toggleBtn.addEventListener('click', openDrawer);
-    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    toggleBtn.addEventListener('click', () => {
+        if (drawer.classList.contains('open')) {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+    });
     overlay.addEventListener('click', closeDrawer);
 }
