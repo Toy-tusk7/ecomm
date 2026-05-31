@@ -108,6 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. Cart Page Quantity and Deletion Ajax
     setupCartActions();
+
+    // 5. Mobile Navigation Drawer Setup
+    setupMobileDrawer();
 });
 
 // Helper: Ensure toast container exists
@@ -307,4 +310,30 @@ function setupCartActions() {
             }
         });
     });
+}
+
+// Function: Setup mobile navigation drawer interactions
+function setupMobileDrawer() {
+    const toggleBtn = document.getElementById('navbar-toggle');
+    const closeBtn = document.getElementById('drawer-close');
+    const overlay = document.getElementById('drawer-overlay');
+    const drawer = document.getElementById('mobile-drawer');
+
+    if (!toggleBtn || !drawer || !overlay) return;
+
+    const openDrawer = () => {
+        drawer.classList.add('open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeDrawer = () => {
+        drawer.classList.remove('open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+
+    toggleBtn.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
 }

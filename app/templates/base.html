@@ -77,8 +77,53 @@
                     </a>
                 {% endif %}
             </div>
+
+            <!-- Mobile Navbar Actions -->
+            <div class="nav-actions-mobile">
+                <a href="{{ url_for('main.cart') }}" class="btn-icon cart-nav-btn" title="Cart">
+                    <span>🛒</span>
+                    {% if cart_count > 0 %}
+                        <span class="cart-badge">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+                <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle Navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-drawer" id="mobile-drawer">
+        <div class="mobile-drawer-close-row">
+            <button class="drawer-close" id="drawer-close">&times;</button>
+        </div>
+        <ul class="mobile-nav-menu">
+            <li><a href="{{ url_for('main.elrs_landing') }}" class="mobile-nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+            <li><a href="{{ url_for('main.index') }}" class="mobile-nav-link {% if request.path == '/products' %}active{% endif %}">Products</a></li>
+            <li><a href="{{ url_for('main.about') }}" class="mobile-nav-link {% if request.path == '/about' %}active{% endif %}">About</a></li>
+            <li><a href="{{ url_for('main.contact') }}" class="mobile-nav-link {% if request.path == '/contact' %}active{% endif %}">Contact Us</a></li>
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_admin %}
+                    <li><a href="{{ url_for('admin.dashboard') }}" class="mobile-nav-link {% if 'admin' in request.path %}active{% endif %}">Admin Hub</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('main.orders') }}" class="mobile-nav-link {% if '/orders' in request.path %}active{% endif %}">My Orders</a></li>
+                {% endif %}
+            {% endif %}
+        </ul>
+        <div class="mobile-drawer-auth">
+            {% if current_user.is_authenticated %}
+                <div class="mobile-username">{{ current_user.username }}</div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary" style="width: 100%;">Logout</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-secondary" style="width: 100%;">Login</a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary" style="width: 100%;">Join</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="drawer-overlay" id="drawer-overlay"></div>
 
     <!-- Main Content Section -->
     {% block main_wrapper %}
