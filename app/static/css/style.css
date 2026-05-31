@@ -1,25 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-primary: #060913;
-  --bg-secondary: #0d1222;
-  --bg-tertiary: #151c33;
-  --glass-bg: rgba(13, 18, 34, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-glow: rgba(99, 102, 241, 0.15);
+  --bg-primary: #faf9f6;             /* Light cream */
+  --bg-secondary: #f4f1ea;           /* Slightly darker cream */
+  --bg-tertiary: #efece4;            /* Darker cream for borders/headers */
+  --glass-bg: rgba(250, 249, 246, 0.85); /* Translucent navbar background */
+  --glass-border: rgba(0, 0, 0, 0.08);   /* Subtle dark border line */
+  --glass-glow: rgba(220, 38, 38, 0.03);  /* Translucent red glow */
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #0f0f0f;           /* Rich black text */
+  --text-secondary: #6c6a64;         /* Warm charcoal text */
+  --text-muted: #8e8c84;             /* Warm grey disabled text */
   
-  --accent-indigo: #6366f1;
-  --accent-purple: #a855f7;
-  --accent-cyan: #06b6d4;
+  --accent-indigo: #dc2626;          /* Premium racing red */
+  --accent-purple: #b91c1c;          /* Darker red */
+  --accent-cyan: #991b1b;            /* Deep red */
   --accent-gradient: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-purple) 100%);
   
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --success: #16a34a;                /* Green */
+  --warning: #ca8a04;                /* Yellow */
+  --error: #dc2626;                  /* Red */
   
   --font-sans: 'Outfit', sans-serif;
   --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -28,8 +28,8 @@
   --border-radius-sm: 8px;
   --border-radius-md: 14px;
   --border-radius-lg: 24px;
-  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.25);
-  --shadow-glow-cyan: 0 0 25px rgba(6, 182, 212, 0.25);
+  --shadow-glow: 0 0 25px rgba(220, 38, 38, 0.12);
+  --shadow-glow-cyan: 0 0 25px rgba(220, 38, 38, 0.12);
 }
 
 /* Base resets and scrollbar styling */
@@ -1065,4 +1065,146 @@ button, input, select, textarea {
     flex-direction: row;
     justify-content: space-between;
   }
+}
+
+/* Premium Logo Loader Overlay */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+}
+
+.loader-logo-container {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.9s cubic-bezier(0.85, 0, 0.15, 1);
+  transform-origin: center center;
+}
+
+.loader-logo-img {
+  width: 280px;
+  height: auto;
+  max-width: 90%;
+  display: block;
+  transition: all 0.9s cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+.loader-overlay.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Navbar Logo Adjustments */
+.navbar .brand {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s;
+}
+
+.navbar .brand.show-brand {
+  opacity: 1;
+  visibility: visible;
+}
+
+.navbar-logo-img {
+  max-height: 28px;
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+/* Light Theme Aesthetic Overrides */
+.btn-icon {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: none !important;
+}
+
+.btn-icon:hover {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--accent-indigo) !important;
+}
+
+.btn-secondary {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--text-primary) !important;
+}
+
+.product-card {
+  background: var(--bg-primary) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02) !important;
+}
+
+.product-card:hover {
+  border-color: var(--accent-indigo) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-card {
+  background: var(--bg-secondary) !important;
+  border-color: var(--glass-border) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Form controls focus states */
+.form-control, input, textarea, select {
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-base);
+}
+
+.form-control:focus, input:focus, textarea:focus, select:focus {
+  border-color: var(--accent-indigo) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* Table rows styling */
+.admin-table th {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.admin-table td {
+  border-bottom: 1px solid var(--glass-border) !important;
+}
+
+/* Premium Toast overrides */
+.toast {
+  background: #121212 !important;
+  color: #ffffff !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15) !important;
+  border-radius: var(--border-radius-md) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.toast-close {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.toast-close:hover {
+  color: #ffffff !important;
 }

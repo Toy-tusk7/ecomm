@@ -1,3 +1,55 @@
+// Page Loader Logo Transition
+window.addEventListener('load', () => {
+    const loaderOverlay = document.getElementById('loader-overlay');
+    const loaderLogo = document.getElementById('loader-logo-container');
+    const navbarBrand = document.getElementById('navbar-brand');
+    
+    // Check if the loader has already played in this browser session
+    if (sessionStorage.getItem('tedh_loader_played') === 'true') {
+        if (loaderOverlay) loaderOverlay.style.display = 'none';
+        if (navbarBrand) navbarBrand.classList.add('show-brand');
+        return;
+    }
+    
+    if (loaderOverlay && loaderLogo && navbarBrand) {
+        // Trigger the transition after a brief visual pause
+        setTimeout(() => {
+            const startRect = loaderLogo.getBoundingClientRect();
+            const destRect = navbarBrand.getBoundingClientRect();
+            
+            // Calculate center offsets
+            const startX = startRect.left + startRect.width / 2;
+            const startY = startRect.top + startRect.height / 2;
+            const destX = destRect.left + destRect.width / 2;
+            const destY = destRect.top + destRect.height / 2;
+            
+            const dx = destX - startX;
+            const dy = destY - startY;
+            const scale = destRect.width / startRect.width;
+            
+            // Start the translation & shrink
+            loaderLogo.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+            
+            // Record that the loader has run for this session
+            sessionStorage.setItem('tedh_loader_played', 'true');
+            
+            // Fade out the overlay background and show the navbar brand
+            setTimeout(() => {
+                loaderOverlay.classList.add('fade-out');
+                navbarBrand.classList.add('show-brand');
+            }, 450);
+            
+            // Clean up loader overlay
+            setTimeout(() => {
+                loaderOverlay.style.display = 'none';
+            }, 1200);
+        }, 300);
+    } else {
+        if (loaderOverlay) loaderOverlay.style.display = 'none';
+        if (navbarBrand) navbarBrand.classList.add('show-brand');
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Toast Notification Setup
     ensureToastContainer();

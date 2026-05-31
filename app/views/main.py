@@ -1,8 +1,53 @@
+from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, jsonify, abort
 from flask_login import current_user, login_required
-from app.models import db, Product, Category, CartItem, Order, OrderItem
+from app.firebase_db import User, Product, Category, CartItem, Order, OrderItem
 
 main_bp = Blueprint('main', __name__)
+
+@main_bp.route('/')
+def elrs_landing():
+    """Apple-style scroll animation landing page for the ELRS Pico LoRa Controller."""
+    product = Product.query.filter_by(name='ELRS Pico LoRa Controller').first()
+    return render_template('main/elrs_landing.html', product=product)
+
+@main_bp.route('/elrs')
+def elrs_redirect():
+    return redirect(url_for('main.elrs_landing'))
+
+@main_bp.route('/about')
+def about():
+    """About page containing design-led studio info from the old site."""
+    return render_template('main/about.html')
+
+@main_bp.route('/contact', methods=['GET', 'POST'])
+def contact():
+    """Contact Us inquiry form page."""
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        message = request.form.get('message', '').strip()
+        
+        # Save inquiry in mock database if needed, otherwise just flash success
+        flash('Inquiry received. Thanks! Your message is ready for review.', 'success')
+        return redirect(url_for('main.contact'))
+        
+    return render_template('main/contact.html')
+
+@main_bp.route('/privacy')
+def privacy():
+    """Privacy Policy page."""
+    return render_template('main/privacy.html')
+
+@main_bp.route('/terms')
+def terms():
+    """Terms of Service page."""
+    return render_template('main/terms.html')
+
+@main_bp.route('/cookies')
+def cookies():
+    """Cookie Policy page."""
+    return render_template('main/cookies.html')
 
 @main_bp.app_context_processor
 def inject_cart_count():
@@ -14,7 +59,7 @@ def inject_cart_count():
         count = sum(cart.values())
     return dict(cart_count=count)
 
-@main_bp.route('/')
+@main_bp.route('/products')
 def index():
     query = request.args.get('q', '').strip()
     category_slug = request.args.get('category', '').strip()
@@ -28,21 +73,22 @@ def index():
         if selected_category:
             products_query = products_query.filter_by(category_id=selected_category.id)
             
-    if query:
-        products_query = products_query.filter(
-            (Product.name.ilike(f'%{query}%')) | 
-            (Product.description.ilike(f'%{query}%'))
-        )
-        
     products = products_query.all()
+    if query:
+        q = query.lower()
+        products = [p for p in products if q in p.name.lower() or (p.description and q in p.description.lower())]
+        
     return render_template('main/index.html', products=products, categories=categories, selected_category=selected_category, query=query)
 
 @main_bp.route('/product/<int:product_id>')
 def product_detail(product_id):
     product = Product.query.get_or_404(product_id)
     categories = Category.query.all()
+    
     # Recommended products (same category, excluding current product)
-    recommended = Product.query.filter(Product.category_id == product.category_id, Product.id != product.id).limit(4).all()
+    recommended_query = Product.query.filter_by(category_id=product.category_id)
+    recommended = [p for p in recommended_query.all() if p.id != product.id][:4]
+    
     return render_template('main/product.html', product=product, categories=categories, recommended=recommended)
 
 @main_bp.route('/cart')
@@ -102,8 +148,7 @@ def cart_add(product_id):
             item.quantity += qty
         else:
             item = CartItem(user_id=current_user.id, product_id=product.id, quantity=qty)
-            db.session.add(item)
-        db.session.commit()
+        item.save()
     else:
         cart = session.get('cart', {})
         str_id = str(product_id)
@@ -136,7 +181,7 @@ def cart_update(product_id):
         item = CartItem.query.filter_by(user_id=current_user.id, product_id=product.id).first()
         if item:
             item.quantity = qty
-            db.session.commit()
+            item.save()
     else:
         cart = session.get('cart', {})
         str_id = str(product_id)
@@ -145,7 +190,6 @@ def cart_update(product_id):
             session['cart'] = cart
             
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # Return updated JSON totals
         subtotal = product.price * qty
         total = 0.0
         if current_user.is_authenticated:
@@ -172,8 +216,7 @@ def cart_remove(product_id):
     if current_user.is_authenticated:
         item = CartItem.query.filter_by(user_id=current_user.id, product_id=product.id).first()
         if item:
-            db.session.delete(item)
-            db.session.commit()
+            item.delete()
     else:
         cart = session.get('cart', {})
         str_id = str(product_id)
@@ -182,7 +225,6 @@ def cart_remove(product_id):
             session['cart'] = cart
             
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        # Calculate new total
         total = 0.0
         if current_user.is_authenticated:
             db_items = current_user.cart_items.all()
@@ -238,10 +280,10 @@ def checkout():
             status='Paid',  # Mock successful payment
             total_price=total,
             shipping_address=shipping_full,
-            payment_method=payment
+            payment_method=payment,
+            created_at=datetime.utcnow()
         )
-        db.session.add(new_order)
-        db.session.commit() # Get order ID
+        new_order.save()
         
         # Move items to order history and decrement product stocks
         for item in order_items:
@@ -251,14 +293,17 @@ def checkout():
                 quantity=item.quantity,
                 price=item.product.price
             )
-            db.session.add(o_item)
+            o_item.save()
+            
             # Decrement stock
-            item.product.stock -= item.quantity
-            
+            prod = item.product
+            if prod:
+                prod.stock -= item.quantity
+                prod.save()
+                
             # Delete cart item
-            db.session.delete(item)
+            item.delete()
             
-        db.session.commit()
         flash('Thank you! Your order has been placed successfully.', 'success')
         return redirect(url_for('main.orders'))
         

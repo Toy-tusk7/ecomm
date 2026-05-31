@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service — TEDH{% endblock %}
+
+{% block content %}
+<div class="policy-page-container" style="max-width: 800px; margin: 40px auto; padding: 0 24px; line-height: 1.7; color: var(--text-secondary);">
+    <header style="margin-bottom: 60px; text-align: left;">
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-indigo); margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; background-color: var(--accent-indigo); border-radius: 50%; display: inline-block;"></span>Legal
+        </span>
+        <h1 style="font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 24px; color: var(--text-primary);">
+            Terms of Service
+        </h1>
+        <p style="font-size: 14px; color: var(--text-muted);">Last updated: May 31, 2026</p>
+    </header>
+
+    <div style="height: 1px; background-color: var(--glass-border); margin: 40px 0;"></div>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">1. Agreement to Terms</h2>
+        <p>
+            By accessing or using the TEDH website and store, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must not use our website or purchase our products.
+        </p>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">2. Product Sales and Hardware Compliance</h2>
+        <p style="margin-bottom: 12px;">
+            Our products, including the ELRS Pico LoRa Controller, are provided for RC enthusiast and research purposes:
+        </p>
+        <ul style="padding-left: 20px; margin-bottom: 16px; list-style-type: square;">
+            <li><strong>Open Source Compliance:</strong> Hardware designs, PCB schematics, and ExpressLRS firmware are licensed under respective open-source licensing models.</li>
+            <li><strong>Local RF Regulations:</strong> Users are responsible for complying with local regulations regarding RF transmission power limits and frequency band usage (e.g. 915MHz vs. 433MHz).</li>
+            <li><strong>Availability and Stock:</strong> All product listings are subject to batch availability and stock limitations.</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">3. Accounts and Transactions</h2>
+        <p>
+            When registering an account or executing payments on our e-commerce platform, you agree to provide truthful and complete information. You are responsible for protecting your credentials. We reserve the right to decline or cancel orders at our sole discretion.
+        </p>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">4. Limitation of Liability</h2>
+        <p>
+            In no event shall TEDH or its founders, partners, or developers be liable for any direct, indirect, incidental, or consequential damages arising from the use of, or inability to use, our hardware products, firmware builds, or web platform.
+        </p>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">5. Amendments to Terms</h2>
+        <p>
+            We reserve the right to modify these Terms of Service at any time. Changes will be posted to this page and take effect immediately. Continued use of our site indicates acceptance of updated terms.
+        </p>
+    </section>
+</div>
+{% endblock %}

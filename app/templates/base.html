@@ -3,21 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Obsidian Store - Premium Tech Accessories{% endblock %}</title>
+    <title>{% block title %}TEDH | Beyond Precision{% endblock %}</title>
+    <!-- Tab favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='uploads/tab_logo.png') }}" type="image/x-icon">
     <!-- CSS stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <!-- Premium Startup Loader Overlay -->
+    <div id="loader-overlay" class="loader-overlay">
+        <div id="loader-logo-container" class="loader-logo-container">
+            <img src="{{ url_for('static', filename='uploads/LIGHT_THEME.png') }}" alt="TEDH" class="loader-logo-img">
+        </div>
+    </div>
+    <script>
+    if (sessionStorage.getItem('tedh_loader_played') === 'true') {
+        var loaderOverlay = document.getElementById('loader-overlay');
+        if (loaderOverlay) {
+            loaderOverlay.style.display = 'none';
+            loaderOverlay.style.visibility = 'hidden';
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            var navbarBrand = document.getElementById('navbar-brand');
+            if (navbarBrand) navbarBrand.classList.add('show-brand');
+        });
+    }
+    </script>
+
     <!-- Navigation Navbar -->
     <header class="navbar">
         <div class="container navbar-container">
-            <a href="{{ url_for('main.index') }}" class="brand">
-                <span>🌌</span> OBSIDIAN<span class="brand-accent">STORE</span>
+            <a href="{{ url_for('main.index') }}" class="brand" id="navbar-brand">
+                <img src="{{ url_for('static', filename='uploads/LIGHT_THEME.png') }}" alt="TEDH" class="navbar-logo-img">
             </a>
             
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">Catalog</a></li>
+                    <li><a href="{{ url_for('main.elrs_landing') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+                    <li><a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == '/products' %}active{% endif %}">Products</a></li>
+                    <li><a href="{{ url_for('main.about') }}" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a></li>
+                    <li><a href="{{ url_for('main.contact') }}" class="nav-link {% if request.path == '/contact' %}active{% endif %}">Contact Us</a></li>
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_admin %}
                             <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if 'admin' in request.path %}active{% endif %}">Admin Hub</a></li>
@@ -56,23 +81,101 @@
     </header>
 
     <!-- Main Content Section -->
+    {% block main_wrapper %}
     <main class="main-content container">
         {% block content %}{% endblock %}
     </main>
+    {% endblock %}
 
     <!-- Footer Section -->
     <footer class="footer">
         <div class="container footer-container">
             <div>
-                <p>&copy; 2026 Obsidian Store. All rights reserved.</p>
+                <p>&copy; 2026 TEDH Studio. All rights reserved.</p>
             </div>
-            <div style="display: flex; gap: 20px;">
-                <a href="#" style="color: var(--text-secondary); hover:color: var(--text-primary)">Privacy</a>
-                <a href="#" style="color: var(--text-secondary); hover:color: var(--text-primary)">Terms</a>
-                <a href="#" style="color: var(--text-secondary); hover:color: var(--text-primary)">Support</a>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <a href="{{ url_for('main.privacy') }}" style="color: var(--text-secondary); hover:color: var(--text-primary)">Privacy Policy</a>
+                <a href="{{ url_for('main.terms') }}" style="color: var(--text-secondary); hover:color: var(--text-primary)">Terms of Service</a>
+                <a href="{{ url_for('main.cookies') }}" style="color: var(--text-secondary); hover:color: var(--text-primary)">Cookie Policy</a>
             </div>
         </div>
     </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent-banner" class="cookie-banner" style="display: none; position: fixed; bottom: 24px; right: 24px; max-width: 400px; background-color: var(--bg-primary); border: 1px solid var(--glass-border); padding: 24px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); z-index: 9999; flex-direction: column; gap: 16px; font-family: var(--font-sans);">
+        <div>
+            <strong style="color: var(--text-primary); font-size: 15px; display: block; margin-bottom: 8px; letter-spacing: -0.01em;">Cookie Consent</strong>
+            <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin: 0;">
+                We use analytical cookies to measure site performance and improve your experience. You can accept or manage settings. Read our <a href="{{ url_for('main.cookies') }}" style="color: var(--accent-indigo); text-decoration: underline;">Cookie Policy</a>.
+            </p>
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button id="cookie-decline-btn" style="background: transparent; border: 1px solid var(--glass-border); color: var(--text-secondary); padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s;">Decline</button>
+            <button id="cookie-accept-btn" style="background: var(--accent-indigo); border: none; color: white; padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220,38,38,0.15);">Accept All</button>
+        </div>
+    </div>
+
+    <!-- Google Analytics Consent Handler -->
+    <script>
+    function loadGoogleAnalytics() {
+        const ga_id = 'G-XXXXXXXXXX'; // Placeholder ID (can be customized by customer)
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=' + ga_id;
+        document.head.appendChild(script);
+
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', ga_id);
+        console.log('[TEDH] Google Analytics tracking activated.');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const banner = document.getElementById('cookie-consent-banner');
+        const acceptBtn = document.getElementById('cookie-accept-btn');
+        const declineBtn = document.getElementById('cookie-decline-btn');
+        const consent = localStorage.getItem('tedh_cookies_accepted');
+
+        if (consent === 'true') {
+            loadGoogleAnalytics();
+        } else if (consent === null) {
+            // Show banner after 1.5 seconds
+            setTimeout(() => {
+                banner.style.display = 'flex';
+                banner.style.animation = 'slideUpConsent 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+            }, 1500);
+        }
+
+        acceptBtn.addEventListener('click', () => {
+            localStorage.setItem('tedh_cookies_accepted', 'true');
+            banner.style.display = 'none';
+            loadGoogleAnalytics();
+        });
+
+        declineBtn.addEventListener('click', () => {
+            localStorage.setItem('tedh_cookies_accepted', 'false');
+            banner.style.display = 'none';
+        });
+    });
+    </script>
+    
+    <style>
+    @keyframes slideUpConsent {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .cookie-banner button:hover {
+        transform: translateY(-1px);
+    }
+    #cookie-decline-btn:hover {
+        border-color: var(--text-primary);
+        color: var(--text-primary);
+    }
+    #cookie-accept-btn:hover {
+        background-color: var(--accent-purple) !important;
+    }
+    </style>
 
     <!-- Flask Flash Messages parser for JavaScript Toasts -->
     {% with messages = get_flashed_messages(with_categories=true) %}

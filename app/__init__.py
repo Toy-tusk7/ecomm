@@ -1,7 +1,8 @@
 import os
+# Reload trigger comment
 from flask import Flask
 from flask_login import LoginManager
-from app.models import db, User, Category, Product
+from app.firebase_db import User, Category, Product
 from app.config import Config
 
 login_manager = LoginManager()
@@ -17,7 +18,6 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     
     # Initialize extension objects
-    db.init_app(app)
     login_manager.init_app(app)
     
     # Ensure static directories exist
@@ -34,7 +34,6 @@ def create_app(config_class=Config):
     
     # Database seeding context
     with app.app_context():
-        db.create_all()
         seed_database()
         
     return app
@@ -50,8 +49,7 @@ def seed_database():
                 is_admin=True
             )
             admin_user.set_password('adminpassword')
-            db.session.add(admin_user)
-            db.session.commit() # Commit immediately to release table locks
+            admin_user.save()
             
         # Seed default Standard Customer User if not exists
         customer = User.query.filter_by(username='user').first()
@@ -62,32 +60,39 @@ def seed_database():
                 is_admin=False
             )
             customer_user.set_password('userpassword')
-            db.session.add(customer_user)
-            db.session.commit() # Commit immediately to release table locks
+            customer_user.save()
             
         # Seed default Categories if not exists
         categories_data = [
             {'name': 'Mechanical Keyboards', 'slug': 'keyboards'},
             {'name': 'Audio Gear', 'slug': 'audio'},
             {'name': 'Gaming Mice', 'slug': 'mice'},
-            {'name': 'Ambient Lighting', 'slug': 'lighting'}
+            {'name': 'Ambient Lighting', 'slug': 'lighting'},
+            {'name': 'Controllers', 'slug': 'controllers'}
         ]
         
         for cat_info in categories_data:
             existing_cat = Category.query.filter_by(slug=cat_info['slug']).first()
             if not existing_cat:
                 cat = Category(name=cat_info['name'], slug=cat_info['slug'])
-                db.session.add(cat)
-                
-        db.session.commit()
+                cat.save()
         
-        # Seed default Products if not exists
+        # Load categories to map IDs
         keyboards_cat = Category.query.filter_by(slug='keyboards').first()
         audio_cat = Category.query.filter_by(slug='audio').first()
         mice_cat = Category.query.filter_by(slug='mice').first()
         lighting_cat = Category.query.filter_by(slug='lighting').first()
+        controllers_cat = Category.query.filter_by(slug='controllers').first()
         
         products_data = [
+            {
+                'name': 'ELRS Pico LoRa Controller',
+                'description': 'High-performance ELRS receiver and controller engineered with Raspberry Pi Pico and LoRa technology for ultra-low latency and maximum range.',
+                'price': 149.99,
+                'stock': 50,
+                'image_url': '/static/uploads/elrs_hero.png',
+                'category_id': controllers_cat.id
+            },
             {
                 'name': 'Spectra-80 Mechanical Keyboard',
                 'description': 'A premium 80% layout mechanical keyboard with custom tuned linear switches, hot-swappable sockets, and addressable obsidian-glow RGB backlighting inside a frosted polycarbonate casing.',
@@ -133,9 +138,6 @@ def seed_database():
                     image_url=prod_info['image_url'],
                     category_id=prod_info['category_id']
                 )
-                db.session.add(prod)
-                
-        db.session.commit()
+                prod.save()
     except Exception as e:
-        db.session.rollback()
         print(f"Database seeding bypassed or already complete: {e}")

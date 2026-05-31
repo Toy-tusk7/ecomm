@@ -1,0 +1,1167 @@
+{% extends 'base.html' %}
+
+{% block title %}ELRS Pico LoRa — ExpressLRS Controller{% endblock %}
+
+{% block main_wrapper %}
+<style>
+:root {
+  --bg-cream:    #f4f1ea;          /* Premium warm cream */
+  --bg-cream-2:  #efece4;          /* Slightly darker cream for borders/tables */
+  --acc:         #dc2626;          /* Premium crimson/racing red */
+  --acc-hover:   #b91c1c;          /* Darker red */
+  --acc-light:   rgba(220,38,38,0.05); /* Very translucent red background */
+  --line:        rgba(0,0,0,0.07); /* Subtle dark border lines */
+  --ease:        cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Page structural styles */
+#hero {
+  position: relative;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  overflow: hidden;
+  margin-top: -80px; /* Offset the base.html navbar height */
+  padding-top: 80px;
+}
+
+.hero-left {
+  padding: 80px 48px 80px 64px;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+
+.hero-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  animation: rise .7s var(--ease) .2s forwards;
+}
+
+.hero-kicker::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--acc);
+}
+
+.hero-h1 {
+  font-size: clamp(52px,6vw,88px);
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: .95;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+  opacity: 0;
+  animation: rise .8s var(--ease) .35s forwards;
+}
+
+.hero-h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--text-secondary);
+}
+
+.hero-desc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  max-width: 400px;
+  margin-bottom: 44px;
+  opacity: 0;
+  animation: rise .7s var(--ease) .5s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  opacity: 0;
+  animation: rise .7s var(--ease) .65s forwards;
+}
+
+.btn-primary-elrs {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--acc);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  border-radius: 2px;
+  border: none;
+  cursor: pointer;
+  transition: transform .25s var(--ease), box-shadow .25s, background .25s;
+}
+
+.btn-primary-elrs:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(220,38,38,0.22);
+  background: var(--acc-hover);
+}
+
+.btn-ghost-elrs {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color .2s;
+}
+
+.btn-ghost-elrs:hover {
+  color: var(--text-primary);
+}
+
+.hero-stats {
+  display: flex;
+  margin-top: 60px;
+  border-top: 1px solid var(--line);
+  padding-top: 32px;
+  opacity: 0;
+  animation: rise .7s var(--ease) .8s forwards;
+}
+
+.stat {
+  flex: 1;
+  padding-right: 32px;
+}
+
+.stat+.stat {
+  border-left: 1px solid var(--line);
+  padding-left: 32px;
+  padding-right: 0;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-top: 4px;
+}
+
+.hero-right {
+  position: relative;
+  height: 100vh;
+}
+
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-hint {
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  animation: rise .6s var(--ease) 1.6s forwards;
+}
+
+.scroll-line {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(to bottom, var(--acc), transparent);
+  animation: sl 1.8s ease-in-out infinite;
+}
+
+@keyframes sl {
+  0%, 100% { opacity: .3; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.2); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* MARQUEE */
+.marquee-wrap {
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-cream);
+  padding: 14px 0;
+}
+
+.marquee-track {
+  display: flex;
+  animation: mq 32s linear infinite;
+  width: max-content;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.marquee-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 40px;
+  border-right: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.marquee-item span {
+  color: var(--acc);
+  font-weight: 700;
+}
+
+@keyframes mq {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* SCROLL SCENE */
+#scroll-scene {
+  position: relative;
+  height: 500vh;
+}
+
+#sticky-view {
+  position: sticky;
+  top: 80px; /* Aligns under navbar */
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+#model-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.feat-pill {
+  position: absolute;
+  z-index: 20;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+  pointer-events: none;
+  max-width: 280px;
+}
+
+.feat-pill.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feat-pill-chip {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  background: var(--acc);
+  color: #fff;
+  padding: 3px 8px;
+  margin-bottom: 10px;
+}
+
+.feat-pill-head {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  line-height: 1;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.feat-pill-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.feat-left {
+  left: 64px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.feat-left.show {
+  transform: translateY(-50%);
+}
+
+.feat-right {
+  right: 64px;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: right;
+}
+
+.feat-right.show {
+  transform: translateY(-50%);
+}
+
+.step-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 20;
+}
+
+.step-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--line);
+  border: 1px solid var(--text-secondary);
+  transition: background .3s, transform .3s;
+}
+
+.step-dot.active {
+  background: var(--acc);
+  transform: scale(1.5);
+  border-color: var(--acc);
+}
+
+/* SPECS */
+#specs {
+  background: var(--bg-cream);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.specs-inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-left: 1px solid var(--line);
+}
+
+.spec-cell {
+  padding: 56px 40px;
+  border-right: 1px solid var(--line);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+
+.spec-cell.reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.spec-num {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: 1;
+}
+
+.spec-num sub {
+  font-size: 24px;
+  font-weight: 400;
+  vertical-align: baseline;
+  color: var(--text-secondary);
+}
+
+.spec-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-top: 8px;
+}
+
+.spec-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* FEATURES */
+#features {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 120px 64px;
+}
+
+.feat-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 72px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.feat-section-title {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  line-height: 1;
+}
+
+.feat-section-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 240px;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.feat-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.feat-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 1fr;
+  align-items: start;
+  padding: 40px 0;
+  border-bottom: 1px solid var(--line);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity .5s var(--ease), transform .5s var(--ease);
+}
+
+.feat-row.reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feat-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: .06em;
+  padding-top: 6px;
+}
+
+.feat-name {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  padding-right: 40px;
+}
+
+.feat-detail {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+/* GALLERY */
+#gallery {
+  overflow: hidden;
+}
+
+.gallery-head {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 64px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.gallery-title {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+}
+
+.gallery-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.gallery-scroll {
+  display: flex;
+  gap: 2px;
+  padding: 0 64px 64px;
+  overflow-x: auto;
+  cursor: grab;
+  scrollbar-width: none;
+}
+
+.gallery-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.gallery-scroll:active {
+  cursor: grabbing;
+}
+
+.gal-card {
+  flex: 0 0 auto;
+  width: 520px;
+  height: 340px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--line);
+}
+
+.gal-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .6s var(--ease), filter .4s;
+}
+
+.gal-card:hover img {
+  transform: scale(1.04);
+}
+
+.gal-card-cap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 24px 22px;
+  background: linear-gradient(to top, rgba(250,249,246,0.96), transparent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.gal-accent {
+  flex: 0 0 auto;
+  width: 340px;
+  height: 340px;
+  background: var(--acc);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 32px;
+}
+
+.gal-accent-big {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: 1;
+  color: #fff;
+}
+
+.gal-accent-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.76);
+  margin-top: 8px;
+}
+
+/* COMPARE */
+#compare {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 120px 64px;
+  border-top: 1px solid var(--line);
+}
+
+.compare-title {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  margin-bottom: 12px;
+}
+
+.compare-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 56px;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compare-table th, .compare-table td {
+  padding: 18px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.compare-table th {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--bg-cream);
+}
+
+.col-ours {
+  background: var(--acc-light);
+  border-left: 1px solid rgba(220,38,38,0.1);
+  border-right: 1px solid rgba(220,38,38,0.1);
+}
+
+.col-ours.head {
+  color: var(--acc)!important;
+}
+
+.td-ours {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.td-them {
+  color: var(--text-secondary);
+}
+
+.check {
+  color: var(--acc);
+}
+
+.cross {
+  color: rgba(0,0,0,0.15);
+}
+
+/* FINALE */
+#finale {
+  background: var(--bg-cream);
+  border-top: 1px solid var(--line);
+  padding: 140px 64px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.finale-glow {
+  position: absolute;
+  bottom: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(ellipse, rgba(220,38,38,0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.finale-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--acc);
+  margin-bottom: 24px;
+}
+
+.finale-title {
+  font-size: clamp(56px,8vw,104px);
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: .95;
+  margin-bottom: 24px;
+}
+
+.finale-price {
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+}
+
+.finale-price strong {
+  color: var(--text-primary);
+  font-weight: 900;
+  font-size: 32px;
+}
+
+@media(max-width:900px){
+  #hero { grid-template-columns: 1fr; margin-top: -80px; padding-top: 80px; }
+  .hero-right { height: 50vh; }
+  .hero-left { padding: 80px 24px 40px; }
+  #features, #compare { padding: 80px 24px; }
+  .specs-inner { grid-template-columns: repeat(2, 1fr); }
+  .feat-row { grid-template-columns: 40px 1fr; }
+  .feat-detail { display: none; }
+  .feat-left, .feat-right { display: none; }
+}
+</style>
+
+<div class="grain" aria-hidden="true"></div>
+<div id="sp"></div>
+
+<section id="hero">
+  <div class="hero-left">
+    <div class="hero-kicker">Open Source RC Control</div>
+    <h1 class="hero-h1">Fly<br><em>further.</em><br>Think<br>faster.</h1>
+    <p class="hero-desc">The ELRS Pico LoRa pairs Raspberry Pi's RP2040 with Semtech's SX1276 LoRa — delivering ExpressLRS precision at ranges no 2.4GHz system can touch.</p>
+    <div class="hero-actions">
+      {% if product %}
+      <form action="{{ url_for('main.cart_add', product_id=product.id) }}" method="POST" class="add-to-cart-form" style="display:inline-block;">
+          <input type="hidden" name="quantity" value="1">
+          <button type="submit" class="btn-primary-elrs">
+              Order Now <svg width="14" height="14" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M0 4h14M10 0l4 4-4 4"/></svg>
+          </button>
+      </form>
+      {% else %}
+      <button class="btn-primary-elrs" style="opacity: 0.5; cursor: not-allowed;" disabled>Out of Stock</button>
+      {% endif %}
+      <a href="#features" class="btn-ghost-elrs">Explore specs ↓</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-value">&lt;1ms</div><div class="stat-label">Link latency</div></div>
+      <div class="stat"><div class="stat-value">10km</div><div class="stat-label">LoRa range</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-hint">Scroll to explore<div class="scroll-line"></div></div>
+  </div>
+</section>
+
+<div class="marquee-wrap" aria-hidden="true">
+  <div class="marquee-track">
+    <div class="marquee-item">ExpressLRS Protocol <span>500Hz</span></div>
+    <div class="marquee-item">Raspberry Pi Pico <span>RP2040</span></div>
+    <div class="marquee-item">SX1276 LoRa Radio <span>915MHz</span></div>
+    <div class="marquee-item">USB-C Firmware Flash <span>Native</span></div>
+    <div class="marquee-item">Open Source <span>100%</span></div>
+    <div class="marquee-item">Dual-Band Ready <span>433 / 915</span></div>
+    <div class="marquee-item">Sub-1ms Latency <span>Verified</span></div>
+    <div class="marquee-item">Betaflight / iNav / Ardupilot <span>CRSF</span></div>
+    <div class="marquee-item">ExpressLRS Protocol <span>500Hz</span></div>
+    <div class="marquee-item">Raspberry Pi Pico <span>RP2040</span></div>
+    <div class="marquee-item">SX1276 LoRa Radio <span>915MHz</span></div>
+    <div class="marquee-item">USB-C Firmware Flash <span>Native</span></div>
+    <div class="marquee-item">Open Source <span>100%</span></div>
+    <div class="marquee-item">Dual-Band Ready <span>433 / 915</span></div>
+    <div class="marquee-item">Sub-1ms Latency <span>Verified</span></div>
+    <div class="marquee-item">Betaflight / iNav / Ardupilot <span>CRSF</span></div>
+  </div>
+</div>
+
+<section id="scroll-scene">
+  <div id="sticky-view">
+    <canvas id="model-canvas"></canvas>
+    <div class="feat-pill feat-left" id="fp0">
+      <div class="feat-pill-chip">Processor</div>
+      <div class="feat-pill-head">RP2040<br>Dual-Core</div>
+      <div class="feat-pill-body">133MHz ARM Cortex-M0+ · 264KB SRAM. Telemetry, OSD mixing, protocol bridging — simultaneously.</div>
+    </div>
+    <div class="feat-pill feat-right" id="fp1">
+      <div class="feat-pill-chip">Radio</div>
+      <div class="feat-pill-head">LoRa<br>10km Link</div>
+      <div class="feat-pill-body">SX1276 chirp spread spectrum at 915MHz or 433MHz. Defeats RF pollution that kills 2.4GHz links.</div>
+    </div>
+    <div class="feat-pill feat-left" id="fp2">
+      <div class="feat-pill-chip">Protocol</div>
+      <div class="feat-pill-head">ELRS<br>Sub-1ms</div>
+      <div class="feat-pill-body">ExpressLRS at 500Hz. Stick input reaches your flight controller in under a millisecond.</div>
+    </div>
+    <div class="feat-pill feat-right" id="fp3">
+      <div class="feat-pill-chip">Connectivity</div>
+      <div class="feat-pill-head">USB-C<br>Flash Ready</div>
+      <div class="feat-pill-body">Native USB-C for UF2 firmware and serial debug. No adapters, no drivers — just plug in.</div>
+    </div>
+    <div class="step-indicator">
+      <div class="step-dot active" id="d0"></div>
+      <div class="step-dot" id="d1"></div>
+      <div class="step-dot" id="d2"></div>
+      <div class="step-dot" id="d3"></div>
+    </div>
+  </div>
+</section>
+
+<section id="specs">
+  <div class="specs-inner">
+    <div class="spec-cell"><div class="spec-num">500<sub>Hz</sub></div><div class="spec-tag">Max Refresh</div><div class="spec-note">Faster sticks, tighter loops. ExpressLRS protocol runs natively up to 500 packets per second.</div></div>
+    <div class="spec-cell"><div class="spec-num">100<sub>mW</sub></div><div class="spec-tag">RF Output</div><div class="spec-note">High power efficiency. 20dBm adjustable output delivers solid control without draining battery.</div></div>
+    <div class="spec-cell"><div class="spec-num">26</div><div class="spec-tag">GPIO Pins</div><div class="spec-note">Direct hardware hackability. Connect auxiliary sensors, secondary receivers, or OLED screens.</div></div>
+    <div class="spec-cell"><div class="spec-num">0</div><div class="spec-tag">Licensing</div><div class="spec-note">100% open source hardware and ExpressLRS native compliance. Built for the community.</div></div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="feat-section-head">
+    <h2 class="feat-section-title">The specs.</h2>
+    <p class="feat-section-sub">Every component chosen for performance, hackability, and longevity.</p>
+  </div>
+  <div class="feat-list">
+    <div class="feat-row" style="transition-delay:0s"><div class="feat-num">01</div><div class="feat-name">LoRa Spread Spectrum Radio</div><div class="feat-detail">SX1276 chirp spread spectrum defeats multipath interference and flies clean through urban RF environments that cripple 2.4GHz systems. Swap a BOM line for 915MHz (FCC) or 433MHz (ETSI).</div></div>
+    <div class="feat-row" style="transition-delay:.06s"><div class="feat-num">02</div><div class="feat-name">ExpressLRS Native Protocol</div><div class="feat-detail">Betaflight, iNav, Ardupilot — all supported out of the box. Flash firmware over USB-C with the official ELRS Configurator in under two minutes.</div></div>
+    <div class="feat-row" style="transition-delay:.12s"><div class="feat-num">03</div><div class="feat-name">Raspberry Pi Pico RP2040</div><div class="feat-detail">264KB SRAM, 2MB flash, 26 GPIO pins. Headroom for OSD data forwarding, telemetry relay, and MAVLink bridging simultaneously.</div></div>
+    <div class="feat-row" style="transition-delay:.18s"><div class="feat-num">04</div><div class="feat-name">Fully Open Hardware</div><div class="feat-detail">Every schematic, PCB layout, BOM, and firmware file is open source. Fork it, extend it, manufacture your own. No black boxes.</div></div>
+    <div class="feat-row" style="transition-delay:.24s"><div class="feat-num">05</div><div class="feat-name">Ultra-Low Power Standby</div><div class="feat-detail">LoRa sleep current under 1µA. Combined with Pico's dormant mode, total idle draw drops below 100µA.</div></div>
+    <div class="feat-row" style="transition-delay:.30s"><div class="feat-num">06</div><div class="feat-name">USB-C Flash &amp; Debug</div><div class="feat-detail">Native USB-C for UF2 firmware flashing and CDC serial debug. Drag-and-drop or CLI. Works on Windows, macOS, Linux.</div></div>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="gallery-head">
+    <h2 class="gallery-title">The hardware.</h2>
+    <p class="gallery-sub">Drag to explore →</p>
+  </div>
+  <div class="gallery-scroll" id="gs">
+    <div class="gal-card"><img src="{{ url_for('static', filename='uploads/elrs_board_dark.png') }}" alt="ELRS close-up"><div class="gal-card-cap">Close-up — RP2040 + LoRa</div></div>
+    <div class="gal-card"><img src="{{ url_for('static', filename='uploads/elrs_aerial.png') }}" alt="Aerial view"><div class="gal-card-cap">Flat Lay — Full Assembly</div></div>
+    <div class="gal-card"><img src="{{ url_for('static', filename='uploads/elrs_hero.png') }}" alt="Hero shot"><div class="gal-card-cap">Top View — PCB Layout</div></div>
+    <div class="gal-card"><img src="{{ url_for('static', filename='uploads/elrs_specs.png') }}" alt="Spec view"><div class="gal-card-cap">Studio Shot</div></div>
+    <div class="gal-accent"><div class="gal-accent-big">Open<br>Source.</div><div class="gal-accent-sub">Gerbers + firmware + schematics</div></div>
+  </div>
+</section>
+
+<section id="compare">
+  <h2 class="compare-title">Why switch?</h2>
+  <p class="compare-sub">ELRS Pico LoRa vs. legacy proprietary RC gear.</p>
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th class="col-ours head">ELRS Pico LoRa</th><th>Legacy RC Gear</th></tr></thead>
+    <tbody>
+      <tr><td>Link Latency</td><td class="col-ours td-ours">Sub 1ms @ 500Hz</td><td class="td-them">4–22ms</td></tr>
+      <tr><td>Range</td><td class="col-ours td-ours">Up to 10km LoRa</td><td class="td-them">~1–2km 2.4GHz</td></tr>
+      <tr><td>Open Source</td><td class="col-ours td-ours"><span class="check">✓</span> Full HW + firmware</td><td class="td-them"><span class="cross">✗</span> Proprietary</td></tr>
+      <tr><td>Firmware Updates</td><td class="col-ours td-ours">USB-C drag-and-drop</td><td class="td-them">Vendor-locked OTA</td></tr>
+      <tr><td>Interference</td><td class="col-ours td-ours">LoRa spread spectrum</td><td class="td-them">FHSS on crowded 2.4GHz</td></tr>
+      <tr><td>Extensions</td><td class="col-ours td-ours"><span class="check">✓</span> 26 free GPIO pins</td><td class="td-them"><span class="cross">✗</span> None</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="finale">
+  <div class="finale-glow"></div>
+  <div class="finale-kicker">Limited first batch</div>
+  <h2 class="finale-title">Fly further.</h2>
+  {% if product %}
+  <p class="finale-price">Starting at <strong>${{ "%.2f"|format(product.price) }}</strong> — free worldwide shipping</p>
+  <form action="{{ url_for('main.cart_add', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+      <input type="hidden" name="quantity" value="1">
+      <button type="submit" class="btn-primary-elrs">
+          Add to Cart <svg width="14" height="14" viewBox="0 0 16 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"><path d="M0 4h14M10 0l4 4-4 4"/></svg>
+      </button>
+  </form>
+  {% else %}
+  <p class="finale-price">Starting at <strong>$149.99</strong> — free worldwide shipping</p>
+  <button class="btn-primary-elrs" style="opacity: 0.5; cursor: not-allowed;" disabled>Out of Stock</button>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- importmap MUST come before any type="module" script -->
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/* ── helpers ── */
+const lerp = (a,b,t) => a+(b-a)*t;
+const eio  = t => t<0.5 ? 2*t*t : -1+(4-2*t)*t;
+const $    = id => document.getElementById(id);
+
+/* ── scroll progress bar ── */
+window.addEventListener('scroll',()=>{
+  const sp = $('sp');
+  if (sp) {
+    sp.style.width = (window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';
+  }
+},{passive:true});
+
+/* ════════════════════════════════
+   BUILD SCENE
+════════════════════════════════ */
+function makeScene(canvas) {
+  const W=window.innerWidth, H=window.innerHeight;
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(W,H,false);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.3;
+
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, W/H, 0.01, 500);
+  camera.position.set(0,0,7);
+
+  scene.add(new THREE.AmbientLight(0xfffaf0, 2.5));
+  const key = new THREE.DirectionalLight(0xfff8e7, 8.5); key.position.set(5,8,6); scene.add(key);
+  const fill= new THREE.DirectionalLight(0xffe4e6, 2.0); fill.position.set(-5,-3,4); scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xfecdd3, 3.5); rim.position.set(0,10,-5); scene.add(rim);
+  const bottomLight = new THREE.DirectionalLight(0xfecdd3, 1.2); bottomLight.position.set(0,-6,-4); scene.add(bottomLight);
+
+  return {renderer, scene, camera};
+}
+
+function fitGroup(g, size=3.0) {
+  const box=new THREE.Box3().setFromObject(g);
+  const c=box.getCenter(new THREE.Vector3());
+  const s=box.getSize(new THREE.Vector3());
+  
+  // Create wrapper to rotate around center correctly
+  const wrapper = new THREE.Group();
+  wrapper.add(g);
+  g.position.sub(c);
+  wrapper.scale.setScalar(size / Math.max(s.x, s.y, s.z));
+  return wrapper;
+}
+
+/* ════════════════════════════════
+   PROCEDURAL PCB (guaranteed fallback)
+════════════════════════════════ */
+function makePCB() {
+  const g = new THREE.Group();
+  const add = (geo, color, x=0,y=0,z=0, em=0x000000, ei=0) => {
+    const m=new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color,roughness:0.42,metalness:0.25,emissive:em,emissiveIntensity:ei}));
+    m.position.set(x,y,z); g.add(m); return m;
+  };
+
+  add(new THREE.BoxGeometry(3.6,0.055,2.2), 0x14321a);                         // FR4 board
+  add(new THREE.BoxGeometry(3.58,0.003,2.18), 0x8c5e1a, 0,0.029,0);            // copper plane
+
+  // traces
+  const tm=new THREE.MeshStandardMaterial({color:0xe8ff47,emissive:0xe8ff47,emissiveIntensity:0.6,roughness:0.08,metalness:0.85});
+  [[0,1.4,1.8],[0.6,0.8,0.5],[-0.9,0.6,0.9],[0.1,1.6,0.3]].forEach(([x,w,d])=>{
+    const t=new THREE.Mesh(new THREE.BoxGeometry(w,0.003,d),tm); t.position.set(x,0.031,0); g.add(t);
+  });
+
+  // Pico
+  add(new THREE.BoxGeometry(1.38,0.055,0.72), 0x2d8a42, -0.55,0.055,-0.08);
+  add(new THREE.BoxGeometry(0.28,0.032,0.28), 0x0a0a0a, -0.55,0.09,-0.08);     // RP2040
+  add(new THREE.BoxGeometry(0.06,0.05,0.06), 0xffffff, -0.2,0.09,0.28, 0xffffff,3.5); // LED
+  const usbMat=new THREE.MeshStandardMaterial({color:0xb0b0b0,metalness:0.92,roughness:0.08});
+  g.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(0.07,0.048,0.19),usbMat),{position:new THREE.Vector3(-1.27,0.04,0.19)}));
+
+  // Gold pads
+  const padMat=new THREE.MeshStandardMaterial({color:0xd4a017,metalness:0.95,roughness:0.04});
+  for(let i=-5;i<=5;i++){
+    const p=new THREE.Mesh(new THREE.BoxGeometry(0.065,0.006,0.11),padMat);
+    p.position.set(i*0.3,0.031,1.04); g.add(p);
+    const p2=p.clone(); p2.position.z=-1.04; g.add(p2);
+  }
+
+  // LoRa module
+  add(new THREE.BoxGeometry(0.74,0.082,0.54), 0x181c26, 1.05,0.068,-0.2);
+  const sMat=new THREE.MeshStandardMaterial({color:0x999999,metalness:0.95,roughness:0.05});
+  [-0.25,0.25].forEach(z=>{ const s=new THREE.Mesh(new THREE.BoxGeometry(0.74,0.002,0.01),sMat); s.position.set(1.05,0.11,z-0.2); g.add(s); });
+
+  // SMA connector
+  const antMat=new THREE.MeshStandardMaterial({color:0xdddddd,metalness:0.95,roughness:0.07});
+  const ab=new THREE.Mesh(new THREE.CylinderGeometry(0.058,0.058,0.24,12),antMat);
+  ab.rotation.z=Math.PI/2; ab.position.set(1.78,0.09,-0.2); g.add(ab);
+
+  // USB-C
+  g.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(0.1,0.044,0.18),usbMat),{position:new THREE.Vector3(-1.83,0.03,0.25)}));
+
+  // LEDs + halo lights
+  [[0x44ff44,3],[0xff4400,2.2],[0x4499ff,2.6]].forEach(([c,ei],i)=>{
+    const led=new THREE.Mesh(new THREE.BoxGeometry(0.055,0.045,0.055),
+      new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:ei,roughness:0.04}));
+    led.position.set(-1.1+i*0.18,0.058,0.92); g.add(led);
+    const pt=new THREE.PointLight(c,0.7,0.9); pt.position.set(-1.1+i*0.18,0.2,0.92); g.add(pt);
+  });
+
+  // Buttons
+  const btnMat=new THREE.MeshStandardMaterial({color:0x181818,roughness:0.92});
+  [-0.3,0.1].forEach(x=>{ const b=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,0.055,8),btnMat); b.position.set(x,0.058,0.92); g.add(b); });
+
+  // Caps
+  const fillMat=new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:0.75});
+  [[0.2,0.56],[0.4,0.62],[-0.1,0.64]].forEach(([x,z])=>{
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.06,8),fillMat); cap.position.set(x,0.042,z); g.add(cap);
+  });
+
+  // Edge glow
+  const eMat=new THREE.MeshStandardMaterial({color:0xe8ff47,emissive:0xe8ff47,emissiveIntensity:0.18});
+  [1.1,-1.1].forEach(z=>{ const e=new THREE.Mesh(new THREE.BoxGeometry(3.62,0.055,0.005),eMat); e.position.z=z; g.add(e); });
+
+  return g;
+}
+
+/* ─── MAIN ─── */
+async function main() {
+  const hCanvas=$('hero-canvas'), mCanvas=$('model-canvas');
+  const {renderer:hR,scene:hS,camera:hCam}=makeScene(hCanvas);
+  const {renderer:mR,scene:mS,camera:mCam}=makeScene(mCanvas);
+
+  let hM=null, mM=null;
+
+  /* ── Load GLTF/GLB Model ── */
+  try {
+    const loader = new GLTFLoader();
+    const url = "{{ url_for('static', filename='uploads/elrs_controller.glb') }}";
+    
+    const gltf = await new Promise((resolve, reject) => {
+      loader.load(url, resolve, null, reject);
+    });
+
+    const modelScene = gltf.scene;
+    const modelSceneClone = modelScene.clone();
+
+    // Center and scale
+    hM = fitGroup(modelScene);
+    mM = fitGroup(modelSceneClone);
+    
+    // Apply clean PBR materials
+    const applyPBR = (g) => {
+      g.traverse(child => {
+        if (child.isMesh) {
+          if (child.material) {
+            child.material.roughness = 0.42;
+            child.material.metalness = 0.35;
+          }
+        }
+      });
+    };
+    applyPBR(hM);
+    applyPBR(mM);
+
+    console.log('[ELRS3D] ✓ GLB loaded successfully');
+  } catch(err) {
+    console.warn('[ELRS3D] GLB failed →', err.message, '— using PCB fallback');
+    hM = fitGroup(makePCB()); 
+    mM = fitGroup(makePCB());
+  }
+
+  hS.add(hM); mS.add(mM);
+
+  /* ── orbit controls (hero — drag to inspect) ── */
+  const ctrl=new OrbitControls(hCam,hCanvas);
+  ctrl.enableDamping=true; ctrl.dampingFactor=0.06;
+  ctrl.enableZoom=false; ctrl.enablePan=false;
+  ctrl.autoRotate=true; ctrl.autoRotateSpeed=0.4;
+  ctrl.minPolarAngle=Math.PI*0.18; ctrl.maxPolarAngle=Math.PI*0.78;
+
+  /* ── hero zoom-out entry ── */
+  let heroT=0;
+  hCam.position.set(0,2,22);
+
+  /* ── scroll scene waypoints ── */
+  const WP=[
+    {ry:0.3, rx:-0.10, cz:7.0, cy:1.5},
+    {ry:-0.7,rx: 0.15, cz:6.2, cy:0.8},
+    {ry:1.4, rx:-0.05, cz:7.4, cy:2.2},
+    {ry:2.3, rx: 0.10, cz:7.8, cy:2.4},
+  ];
+  const fpEls=[...document.querySelectorAll('.feat-pill')];
+  const dotEls=[...document.querySelectorAll('.step-dot')];
+
+  function scrollPct(){
+    const el=$('scroll-scene'), r=el.getBoundingClientRect();
+    const h=el.offsetHeight-window.innerHeight;
+    return h>0 ? Math.min(1,Math.max(0,-r.top/h)) : 0;
+  }
+
+  /* IntersectionObserver — spec cells + feature rows */
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('reveal'); });
+  },{threshold:0.12});
+  document.querySelectorAll('.spec-cell,.feat-row').forEach(el=>io.observe(el));
+
+  /* gallery drag */
+  const gs=$('gs');
+  let isDrag=false,gsSX=0,gsSL=0;
+  gs.addEventListener('mousedown',e=>{ isDrag=true; gsSX=e.pageX; gsSL=gs.scrollLeft; gs.style.cursor='grabbing'; });
+  window.addEventListener('mouseup',()=>{ isDrag=false; gs.style.cursor=''; });
+  gs.addEventListener('mousemove',e=>{ if(!isDrag)return; e.preventDefault(); gs.scrollLeft=gsSL-(e.pageX-gsSX)*1.5; });
+
+  /* smooth anchor scroll */
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+    });
+  });
+
+  /* ── RENDER LOOP ── */
+  const clock=new THREE.Clock();
+
+  (function animate(){
+    requestAnimationFrame(animate);
+    const t=clock.getElapsedTime();
+
+    /* hero zoom-out entry */
+    if(heroT<1){
+      heroT=Math.min(1,heroT+0.004);
+      const e=eio(heroT);
+      hCam.position.z=lerp(22,7,e);
+      hCam.position.y=lerp(2,0,e);
+    }
+    ctrl.update();
+
+    /* hero float + LED pulse */
+    if(hM) hM.position.y=Math.sin(t*0.38)*0.06;
+    hS.traverse(o=>{ if(o.isPointLight) o.intensity=0.5+Math.sin(t*3.2+o.position.x*5)*0.28; });
+
+    hR.render(hS,hCam);
+
+    /* scroll model */
+    const sp=scrollPct();
+    const segF=Math.min(sp*(WP.length-1),WP.length-1.001);
+    const si=Math.floor(segF), st=eio(segF-si);
+    const wa=WP[si], wb=WP[Math.min(si+1,WP.length-1)];
+
+    if(mM){
+      mM.rotation.y=lerp(wa.ry,wb.ry,st)+Math.sin(t*0.28)*0.04;
+      mM.rotation.x=lerp(wa.rx,wb.rx,st)+Math.cos(t*0.18)*0.02;
+      mM.position.y=Math.sin(t*0.44)*0.06;
+    }
+    mS.traverse(o=>{ if(o.isPointLight) o.intensity=0.5+Math.sin(t*3.2+o.position.x*5)*0.28; });
+    mCam.position.z=lerp(wa.cz,wb.cz,st);
+    mCam.position.y=lerp(wa.cy,wb.cy,st);
+    mCam.lookAt(0,0,0);
+    mR.render(mS,mCam);
+
+    /* feature pills */
+    const step=Math.min(Math.floor(sp*4),3);
+    fpEls.forEach((fp,i)=>fp.classList.toggle('show', i===step&&sp>0.01&&sp<0.99));
+    dotEls.forEach((d,i)=>d.classList.toggle('active',i===step));
+  })();
+
+  /* resize */
+  window.addEventListener('resize',()=>{
+    const W=window.innerWidth,H=window.innerHeight;
+    const hw=hCanvas.offsetWidth||W, hh=hCanvas.offsetHeight||H;
+    hCam.aspect=hw/hh; hCam.updateProjectionMatrix(); hR.setSize(hw,hh,false);
+    mCam.aspect=W/H;   mCam.updateProjectionMatrix(); mR.setSize(W,H,false);
+  });
+}
+
+main().catch(err=>console.error('[ELRS3D] Fatal:',err));
+</script>
+{% endblock %}

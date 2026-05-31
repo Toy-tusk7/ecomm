@@ -3,7 +3,7 @@ from functools import wraps
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, current_app
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
-from app.models import db, Product, Category, Order, User
+from app.firebase_db import Product, Category, Order, User
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -66,7 +66,6 @@ def product_new():
         if file and file.filename != '':
             if allowed_file(file.filename):
                 filename = secure_filename(file.filename)
-                # Append unique string or overwrite if exists
                 save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                 file.save(save_path)
                 image_url = f'/static/uploads/{filename}'
@@ -85,12 +84,10 @@ def product_new():
         )
         
         try:
-            db.session.add(new_prod)
-            db.session.commit()
+            new_prod.save()
             flash(f'Product "{name}" added successfully.', 'success')
             return redirect(url_for('admin.dashboard'))
         except Exception as e:
-            db.session.rollback()
             flash('Error creating product. Please try again.', 'error')
             
     return render_template('admin/product_form.html', categories=categories, product=None)
@@ -136,11 +133,10 @@ def product_edit(product_id):
         product.category_id = category_id
         
         try:
-            db.session.commit()
+            product.save()
             flash(f'Product "{name}" updated successfully.', 'success')
             return redirect(url_for('admin.dashboard'))
         except Exception as e:
-            db.session.rollback()
             flash('Error updating product. Please try again.', 'error')
             
     return render_template('admin/product_form.html', categories=categories, product=product)
@@ -152,11 +148,9 @@ def product_delete(product_id):
     name = product.name
     
     try:
-        db.session.delete(product)
-        db.session.commit()
+        product.delete()
         flash(f'Product "{name}" deleted successfully.', 'success')
     except Exception as e:
-        db.session.rollback()
         flash(f'Error deleting product "{name}". It might have order histories.', 'error')
         
     return redirect(url_for('admin.dashboard'))
@@ -175,7 +169,7 @@ def order_status(order_id):
     
     if status in ('Pending', 'Paid', 'Shipped', 'Completed', 'Cancelled'):
         order.status = status
-        db.session.commit()
+        order.save()
         flash(f'Order #{order.id} status updated to {status}.', 'success')
     else:
         flash('Invalid status option selected.', 'error')

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
-from app.models import db, User
+from app.firebase_db import User
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -39,12 +39,10 @@ def register():
         new_user.set_password(password)
         
         try:
-            db.session.add(new_user)
-            db.session.commit()
+            new_user.save()
             flash('Registration successful! Please login.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
-            db.session.rollback()
             flash('An error occurred. Please try again.', 'error')
             
     return render_template('auth/register.html')

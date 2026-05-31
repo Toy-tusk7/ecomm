@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy — TEDH{% endblock %}
+
+{% block content %}
+<div class="policy-page-container" style="max-width: 800px; margin: 40px auto; padding: 0 24px; line-height: 1.7; color: var(--text-secondary);">
+    <header style="margin-bottom: 60px; text-align: left;">
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-indigo); margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; background-color: var(--accent-indigo); border-radius: 50%; display: inline-block;"></span>Legal
+        </span>
+        <h1 style="font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 24px; color: var(--text-primary);">
+            Privacy Policy
+        </h1>
+        <p style="font-size: 14px; color: var(--text-muted);">Last updated: May 31, 2026</p>
+    </header>
+
+    <div style="height: 1px; background-color: var(--glass-border); margin: 40px 0;"></div>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">1. Introduction</h2>
+        <p>
+            Welcome to TEDH ("we," "our," or "us"). We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, purchase our ELRS Pico LoRa Controller, or interact with our services.
+        </p>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">2. Information We Collect</h2>
+        <p style="margin-bottom: 12px;">
+            We collect information that you provide directly to us when using our store, making a purchase, or submitting an inquiry:
+        </p>
+        <ul style="padding-left: 20px; margin-bottom: 16px; list-style-type: square;">
+            <li><strong>Personal Identifiers:</strong> Name, email address, mailing address, billing address, and account credentials.</li>
+            <li><strong>Inquiry Details:</strong> Company name, project briefs, and type of cooperation requested via our contact form.</li>
+            <li><strong>Transaction Information:</strong> Details about payments (processed securely via mock gateways) and order history.</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">3. How We Use Your Information</h2>
+        <p style="margin-bottom: 12px;">We use the collected information for various purposes, including to:</p>
+        <ul style="padding-left: 20px; margin-bottom: 16px; list-style-type: square;">
+            <li>Process, fulfill, and manage your orders and cart details.</li>
+            <li>Respond to product collaborations, partnerships, and general inquiries.</li>
+            <li>Monitor site performance and user flows using analytics to improve usability.</li>
+            <li>Comply with legal obligations and prevent fraudulent activities.</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">4. Cookies and Tracking Technologies</h2>
+        <p>
+            We use essential session cookies to manage cart states and user logins. Additionally, subject to your consent, we employ analytical cookies (Google Analytics) to compile anonymous reports on page views and system load. For detailed information, please refer to our <a href="{{ url_for('main.cookies') }}" style="color: var(--accent-indigo); text-decoration: underline;">Cookie Policy</a>.
+        </p>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 16px; letter-spacing: -0.01em;">5. Contact Us</h2>
+        <p>
+            If you have questions about this policy or our data practices, please start a conversation on our <a href="{{ url_for('main.contact') }}" style="color: var(--accent-indigo); text-decoration: underline;">Contact Page</a> or reach out directly via email at <a href="mailto:hello@tedh.in" style="color: var(--accent-indigo); text-decoration: underline;">hello@tedh.in</a>.
+        </p>
+    </section>
+</div>
+{% endblock %}
