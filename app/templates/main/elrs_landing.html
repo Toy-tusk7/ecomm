@@ -718,7 +718,29 @@
   .specs-inner { grid-template-columns: repeat(2, 1fr); }
   .feat-row { grid-template-columns: 40px 1fr; }
   .feat-detail { display: none; }
-  .feat-left, .feat-right { display: none; }
+  .feat-left, .feat-right {
+    display: block !important;
+    left: 50% !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: 60px !important;
+    transform: translateX(-50%) translateY(14px) !important;
+    text-align: center !important;
+    max-width: 90% !important;
+    width: 320px !important;
+    background: rgba(244, 241, 234, 0.92) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    padding: 16px 20px !important;
+    border: 1px solid var(--line) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06) !important;
+    border-radius: 4px !important;
+    pointer-events: auto !important;
+  }
+  .feat-left.show, .feat-right.show {
+    transform: translateX(-50%) translateY(0) !important;
+    opacity: 1 !important;
+  }
 }
 </style>
 
@@ -898,6 +920,17 @@ const lerp = (a,b,t) => a+(b-a)*t;
 const eio  = t => t<0.5 ? 2*t*t : -1+(4-2*t)*t;
 const $    = id => document.getElementById(id);
 
+const updateCameraFov = (cam, w, h) => {
+  cam.aspect = w / h;
+  if (w < h) {
+    cam.fov = 40 * (h / w) * 0.65;
+    if (cam.fov > 80) cam.fov = 80;
+  } else {
+    cam.fov = 40;
+  }
+  cam.updateProjectionMatrix();
+};
+
 /* ── scroll progress bar ── */
 window.addEventListener('scroll',()=>{
   const sp = $('sp');
@@ -920,6 +953,7 @@ function makeScene(canvas) {
   const scene  = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(40, W/H, 0.01, 500);
   camera.position.set(0,0,7);
+  updateCameraFov(camera, W, H);
 
   scene.add(new THREE.AmbientLight(0xfffaf0, 2.5));
   const key = new THREE.DirectionalLight(0xfff8e7, 8.5); key.position.set(5,8,6); scene.add(key);
@@ -1160,8 +1194,11 @@ async function main() {
   window.addEventListener('resize',()=>{
     const W=window.innerWidth,H=window.innerHeight;
     const hw=hCanvas.offsetWidth||W, hh=hCanvas.offsetHeight||H;
-    hCam.aspect=hw/hh; hCam.updateProjectionMatrix(); hR.setSize(hw,hh,false);
-    mCam.aspect=W/H;   mCam.updateProjectionMatrix(); mR.setSize(W,H,false);
+    updateCameraFov(hCam, hw, hh);
+    hR.setSize(hw,hh,false);
+    
+    updateCameraFov(mCam, W, H);
+    mR.setSize(W,H,false);
   });
 }
 

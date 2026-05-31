@@ -1420,4 +1420,33 @@ button, input, select, textarea {
   .detail-gallery {
     height: 320px;
   }
+
+  /* Gallery mobile scaling overrides */
+  .gal-card {
+    width: 280px !important;
+    height: 200px !important;
+  }
+
+  .gal-accent {
+    width: 200px !important;
+    height: 200px !important;
+    padding: 16px !important;
+  }
+
+  .gal-accent-big {
+    font-size: 32px !important;
+  }
+
+  .gallery-scroll {
+    padding: 0 16px 32px !important;
+    gap: 8px !important;
+  }
+
+  /* Footer responsiveness */
+  .footer-container div {
+    text-align: center;
+  }
+  .footer-container div:last-child {
+    justify-content: center;
+  }
 }
